@@ -1,0 +1,309 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile data for registered and logged-in members",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Firebase Auth user ID",
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "name": {
+          "type": "string",
+          "description": "Full display name of the user",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the user",
+          "maxLength": 120
+        },
+        "handle": {
+          "type": "string",
+          "description": "Unique username handle prefixed with @",
+          "maxLength": 60
+        },
+        "avatar": {
+          "type": "string",
+          "description": "Avatar image URL or photo URL",
+          "maxLength": 2048
+        },
+        "bio": {
+          "type": "string",
+          "description": "Short bio or tagline",
+          "maxLength": 500
+        },
+        "website": {
+          "type": "string",
+          "description": "Portfolio or social website link",
+          "maxLength": 200
+        },
+        "location": {
+          "type": "string",
+          "description": "City or country location",
+          "maxLength": 100
+        },
+        "followersCount": {
+          "type": "number",
+          "description": "Count of users following this profile"
+        },
+        "followingCount": {
+          "type": "number",
+          "description": "Count of profiles this user follows"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp string of account creation"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp string of profile update"
+        }
+      },
+      "required": ["id", "name", "handle", "avatar"]
+    },
+    "Pin": {
+      "title": "Pin",
+      "description": "Uploaded visual pin or post with image metadata, category, and engagement stats",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique pin ID",
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "title": {
+          "type": "string",
+          "description": "Title of the uploaded pin",
+          "minLength": 1,
+          "maxLength": 150
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed text description or note",
+          "maxLength": 1500
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL or storage URL of the pin image",
+          "minLength": 1,
+          "maxLength": 500000
+        },
+        "aspectRatio": {
+          "type": "string",
+          "description": "Display aspect ratio of the image",
+          "enum": ["3:4", "4:3", "1:1", "16:9", "9:16"]
+        },
+        "category": {
+          "type": "string",
+          "description": "Visual category or topic",
+          "maxLength": 60
+        },
+        "authorId": {
+          "type": "string",
+          "description": "UID of the user who uploaded the pin",
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "authorName": {
+          "type": "string",
+          "description": "Display name of the author",
+          "maxLength": 80
+        },
+        "authorHandle": {
+          "type": "string",
+          "description": "Handle of the author",
+          "maxLength": 60
+        },
+        "authorAvatar": {
+          "type": "string",
+          "description": "Avatar of the author",
+          "maxLength": 2048
+        },
+        "savesCount": {
+          "type": "number",
+          "description": "Number of times pin was saved"
+        },
+        "likesCount": {
+          "type": "number",
+          "description": "Number of likes received"
+        },
+        "sourceUrl": {
+          "type": "string",
+          "description": "Optional destination web link",
+          "maxLength": 500
+        },
+        "tags": {
+          "type": "string",
+          "description": "Comma-separated or tag list description",
+          "maxLength": 500
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Date or ISO string when created"
+        },
+        "savedInBoardId": {
+          "type": "string",
+          "description": "ID of board where it was initially pinned",
+          "maxLength": 128
+        }
+      },
+      "required": ["id", "title", "imageUrl", "authorId", "authorName", "category"]
+    },
+    "Board": {
+      "title": "Board",
+      "description": "Collection board created by a user to save and organize pins",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique board ID",
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "userId": {
+          "type": "string",
+          "description": "UID of the board owner",
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "name": {
+          "type": "string",
+          "description": "Board title",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "description": {
+          "type": "string",
+          "description": "Board description",
+          "maxLength": 500
+        },
+        "isPrivate": {
+          "type": "string",
+          "description": "Privacy indicator (public or secret)",
+          "enum": ["true", "false"]
+        },
+        "coverImage": {
+          "type": "string",
+          "description": "Cover thumbnail image URL",
+          "maxLength": 2048
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Creation timestamp"
+        }
+      },
+      "required": ["id", "userId", "name"]
+    },
+    "Comment": {
+      "title": "Comment",
+      "description": "Community comment on an uploaded pin",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique comment ID",
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "pinId": {
+          "type": "string",
+          "description": "ID of the target pin",
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "authorId": {
+          "type": "string",
+          "description": "UID of the comment creator",
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "authorName": {
+          "type": "string",
+          "description": "Author display name",
+          "maxLength": 80
+        },
+        "authorAvatar": {
+          "type": "string",
+          "description": "Author avatar URL",
+          "maxLength": 2048
+        },
+        "text": {
+          "type": "string",
+          "description": "Comment content text",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Creation timestamp"
+        },
+        "likes": {
+          "type": "number",
+          "description": "Number of comment likes"
+        }
+      },
+      "required": ["id", "pinId", "authorId", "authorName", "text"]
+    },
+    "DonationConfig": {
+      "title": "DonationConfig",
+      "description": "Payment and QR configuration managed by the admin",
+      "type": "object",
+      "properties": {
+        "adminEmail": {
+          "type": "string",
+          "description": "Authorized admin email address",
+          "maxLength": 120
+        },
+        "upiId": {
+          "type": "string",
+          "description": "UPI payment VPA address",
+          "maxLength": 100
+        },
+        "payeeName": {
+          "type": "string",
+          "description": "Recipient name displayed on UPI apps",
+          "maxLength": 100
+        },
+        "defaultAmount": {
+          "type": "number",
+          "description": "Default donation suggestion in Rupees"
+        },
+        "message": {
+          "type": "string",
+          "description": "Greeting or cause description",
+          "maxLength": 300
+        },
+        "isActive": {
+          "type": "string",
+          "description": "Status of the donation badge",
+          "enum": ["true", "false"]
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Last updated timestamp"
+        }
+      },
+      "required": ["adminEmail", "upiId", "payeeName"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile document keyed by auth UID"
+    },
+    "/pins/{pinId}": {
+      "schema": "Pin",
+      "description": "Uploaded pins and posts"
+    },
+    "/boards/{boardId}": {
+      "schema": "Board",
+      "description": "User created boards for organizing pins"
+    },
+    "/pins/{pinId}/comments/{commentId}": {
+      "schema": "Comment",
+      "description": "Discussion comments on individual pins"
+    },
+    "/configs/donation": {
+      "schema": "DonationConfig",
+      "description": "Admin-controlled UPI donation configuration"
+    }
+  }
+}

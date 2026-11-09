@@ -1,0 +1,82 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-growth-sage: #435146;
+  --color-growth-charcoal: #1c1c1c;
+  --color-growth-forest: #4a6958;
+  --color-growth-pine: #1b2922;
+  --color-growth-light: #f4f6f4;
+  --color-growth-surface: #ffffff;
+  --color-growth-card: #e8ede9;
+  --color-growth-dark: #121d18;
+  --color-growth-hover: #3d5849;
+  --color-growth-accent: #5b826d;
+}
+
+:root {
+  --bg-primary: #f4f6f4;
+  --bg-surface: #ffffff;
+  --bg-card: #edf2ee;
+  --border-color: #dbe4dc;
+  --text-primary: #1c1c1c;
+  --text-muted: #435146;
+  --brand-accent: #4a6958;
+  --brand-hover: #3d5849;
+  --brand-dark: #1b2922;
+}
+
+.dark {
+  --bg-primary: #121d18;
+  --bg-surface: #1b2922;
+  --bg-card: #1f3028;
+  --border-color: #2b3d34;
+  --text-primary: #f2f5f3;
+  --text-muted: #8fa597;
+  --brand-accent: #4a6958;
+  --brand-hover: #5b806c;
+  --brand-dark: #1c1c1c;
+}
+
+html, body, #root {
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  background-color: #f4f6f4;
+  color: #1c1c1c;
+}
+
+.dark html, .dark body, .dark #root {
+  background-color: #121d18;
+  color: #f2f5f3;
+}
+
+/* Custom scrollbar matching ReGrowth forest tones */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd6ce;
+  border-radius: 9999px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #2b3d34;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #4a6958;
+}

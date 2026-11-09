@@ -1,0 +1,6 @@
+{
+  "name": "PinTrust — Visual Discovery & Idea Moodboard",
+  "description": "Discover, curate, and organize inspiring visuals, architectural spaces, editorial styling, and creative projects in a responsive masonry board.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
