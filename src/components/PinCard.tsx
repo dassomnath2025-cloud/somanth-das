@@ -9,6 +9,7 @@ interface PinCardProps {
   onToggleSave: (pinId: string, boardId?: string) => void;
   onToggleLike: (pinId: string) => void;
   onShare: (pin: Pin) => void;
+  index?: number;
 }
 
 export const PinCard: React.FC<PinCardProps> = ({
@@ -18,6 +19,7 @@ export const PinCard: React.FC<PinCardProps> = ({
   onToggleSave,
   onToggleLike,
   onShare,
+  index = 0,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [selectedBoardId, setSelectedBoardId] = useState<string>(
@@ -60,9 +62,12 @@ export const PinCard: React.FC<PinCardProps> = ({
     }
   };
 
+  const staggerDelay = `${Math.min(index * 40, 520)}ms`;
+
   return (
     <div
-      className="masonry-item group cursor-pointer"
+      className="masonry-item pin-card-animate group cursor-pointer"
+      style={{ animationDelay: staggerDelay }}
       onClick={() => onOpenModal(pin)}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => {

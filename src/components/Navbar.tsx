@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Search,
   Plus,
@@ -18,14 +18,47 @@ import {
   Settings,
   User as UserIcon,
   Edit3,
+  TrendingUp,
+  Tag,
+  ArrowRight,
+  Hash,
+  Sparkles,
+  Flame,
 } from 'lucide-react';
 import { UserProfile, DonationConfig, LOGO_URL } from '../types';
+import { CATEGORIES } from '../data/pinsData';
+
+export interface EncriptTopic {
+  id: string;
+  name: string;
+  tag: string;
+  query: string;
+  category: string;
+  icon: string;
+  pinCount: string;
+  isTrending?: boolean;
+}
+
+export const ENCRIPT_TOPICS: EncriptTopic[] = [
+  { id: 'chai-snacks', name: 'Chai Time Snacks & Samosas', tag: 'ChaiSnacks', query: 'Chai', category: 'Chai Time Snacks', icon: '☕', pinCount: '12.4k pins', isTrending: true },
+  { id: 'home-decor', name: 'Warm Indian Home Decor', tag: 'HomeDecor', query: 'Home Decor', category: 'Home Decor', icon: '🪔', pinCount: '28.1k pins', isTrending: true },
+  { id: 'outfits', name: 'Festive & Ethnic Outfits', tag: 'EthnicWear', query: 'Outfit', category: 'Outfit Ideas', icon: '✨', pinCount: '19.5k pins', isTrending: true },
+  { id: 'diy-projects', name: 'DIY Projects & Indoor Plants', tag: 'DIYProjects', query: 'DIY', category: 'DIY Projects', icon: '🪴', pinCount: '15.2k pins', isTrending: true },
+  { id: 'architecture', name: 'Modern Concrete Architecture', tag: 'ConcreteArch', query: 'Architecture', category: 'Architecture', icon: '🏛️', pinCount: '9.8k pins', isTrending: true },
+  { id: 'artisan-coffee', name: 'Artisan Coffee & Cafe Brews', tag: 'CoffeeArt', query: 'Coffee', category: 'Culinary & Cafe', icon: '☕', pinCount: '14.2k pins' },
+  { id: 'minimal-living', name: 'Minimal Living & Aesthetics', tag: 'MinimalLiving', query: 'Living', category: 'Interior Design', icon: '🛋️', pinCount: '22.0k pins', isTrending: true },
+  { id: 'monsoon-travel', name: 'Monsoon Street & Travel', tag: 'MonsoonTravel', query: 'Monsoon', category: 'Landscapes & Travel', icon: '🌧️', pinCount: '11.7k pins' },
+  { id: 'teak-furniture', name: 'Handcrafted Teak Furniture', tag: 'Woodcraft', query: 'Furniture', category: 'Furniture', icon: '🪑', pinCount: '7.1k pins' },
+  { id: 'geometric-art', name: 'Geometric & Spiritual Motifs', tag: 'GeometricArt', query: 'Geometric', category: 'Architecture', icon: '🕌', pinCount: '8.3k pins', isTrending: true },
+];
 
 interface NavbarProps {
   activeTab: 'explore' | 'following' | 'saved';
   setActiveTab: (tab: 'explore' | 'following' | 'saved') => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
+  selectedCategory?: string;
+  setSelectedCategory?: (cat: string) => void;
   isDarkMode: boolean;
   setIsDarkMode: (val: boolean | ((prev: boolean) => boolean)) => void;
   onOpenCreateModal: () => void;
@@ -44,6 +77,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   setActiveTab,
   searchQuery,
   setSearchQuery,
+  selectedCategory,
+  setSelectedCategory,
   isDarkMode,
   setIsDarkMode,
   onOpenCreateModal,
@@ -60,8 +95,42 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [showNotifications, setShowNotifications] = useState(false);
   const [showMessages, setShowMessages] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [topicTab, setTopicTab] = useState<'trending' | 'all' | 'tags'>('trending');
+
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const isAdmin = user.email?.toLowerCase() === donationConfig.adminEmail.toLowerCase();
+
+  // Close search suggestions when clicked outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(e.target as Node)
+      ) {
+        setIsSearchFocused(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handleExecuteSearch = (query: string, categoryOverride?: string) => {
+    setSearchQuery(query);
+    if (categoryOverride && setSelectedCategory) {
+      setSelectedCategory(categoryOverride);
+    } else if (setSelectedCategory && query.trim() !== '') {
+      setSelectedCategory('All Pins');
+    }
+    if (activeTab !== 'explore') {
+      setActiveTab('explore');
+    }
+    setIsSearchFocused(false);
+    searchInputRef.current?.blur();
+  };
 
   const notifications = [
     { id: 1, title: 'Aditi Varma Design saved your pin', time: '2h ago' },
@@ -126,34 +195,297 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
         </div>
 
-        {/* Center: Encript Search Bar */}
-        <div className="flex-1 max-w-4xl relative">
+        {/* Center: Encript Topic & Search Bar */}
+        <div ref={searchContainerRef} className="flex-1 max-w-4xl relative">
           <div
-            className={`flex items-center gap-2.5 px-4 py-3 rounded-full bg-[#E8EDE9] dark:bg-[#1F3028] text-[#1C1C1C] dark:text-[#EDF2EE] transition-all ${
+            className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-full bg-[#E8EDE9] dark:bg-[#1F3028] text-[#1C1C1C] dark:text-[#EDF2EE] transition-all cursor-text ${
               isSearchFocused
-                ? 'ring-2 ring-[#4A6958]/50 bg-white dark:bg-[#1B2922] shadow-sm'
+                ? 'ring-2 ring-[#4A6958] bg-white dark:bg-[#1B2922] shadow-md'
                 : 'hover:bg-[#D6DFD8]/70 dark:hover:bg-[#273A31]'
             }`}
+            onClick={() => searchInputRef.current?.focus()}
           >
-            <Search className="w-4 h-4 text-[#435146] dark:text-[#8FA597] shrink-0" />
+            {/* Quick Topic Switcher Pill inside the Search Bar */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsSearchFocused(true);
+                setTopicTab('trending');
+              }}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-[#D6DFD8] hover:bg-[#cbd6ce] dark:bg-[#273A31] dark:hover:bg-[#344b3f] text-[#4A6958] dark:text-[#8FA597] transition-all cursor-pointer shrink-0 shadow-2xs"
+              title="Explore Topics"
+            >
+              <Hash className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Topics</span>
+              <ChevronDown className="w-3 h-3 opacity-70" />
+            </button>
+
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleExecuteSearch(searchQuery);
+              }}
+              className="p-1 -ml-0.5 text-[#435146] hover:text-[#1C1C1C] dark:text-[#8FA597] dark:hover:text-white rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer shrink-0"
+              title="Search Topic"
+              aria-label="Submit topic search"
+            >
+              <Search className="w-4 h-4" />
+            </button>
+
             <input
+              ref={searchInputRef}
               type="text"
-              placeholder="Search chai snacks, home decor, outfit ideas..."
+              placeholder="Search topics, categories, ideas & tags (#ChaiSnacks, #HomeDecor)..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value;
+                setSearchQuery(val);
+                if (activeTab !== 'explore') {
+                  setActiveTab('explore');
+                }
+                if (setSelectedCategory && selectedCategory !== 'All Pins') {
+                  setSelectedCategory('All Pins');
+                }
+              }}
               onFocus={() => setIsSearchFocused(true)}
-              onBlur={() => setIsSearchFocused(false)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleExecuteSearch(searchQuery);
+                } else if (e.key === 'Escape') {
+                  setIsSearchFocused(false);
+                  searchInputRef.current?.blur();
+                }
+              }}
               className="w-full bg-transparent text-sm placeholder:text-[#435146]/70 dark:placeholder:text-[#8FA597]/70 focus:outline-none"
             />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="p-1 text-[#435146] hover:text-[#1C1C1C] dark:text-[#8FA597] dark:hover:text-white cursor-pointer"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
+
+            {searchQuery ? (
+              <div className="flex items-center gap-1 shrink-0">
+                <span className="hidden md:inline-flex items-center text-[10px] font-semibold text-[#435146]/80 dark:text-[#8FA597]/80 bg-white dark:bg-[#121D18] px-1.5 py-0.5 rounded border border-[#D6DFD8] dark:border-[#273A31]">
+                  ↵ Enter
+                </span>
+                <button
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSearchQuery('');
+                    if (setSelectedCategory) setSelectedCategory('All Pins');
+                    searchInputRef.current?.focus();
+                  }}
+                  className="p-1 rounded-full text-[#435146] hover:text-[#1C1C1C] dark:text-[#8FA597] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                  title="Clear topic search"
+                  aria-label="Clear topic search"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ) : (
+              <span className="hidden lg:inline-flex items-center gap-1 text-[11px] font-semibold text-[#4A6958] dark:text-[#8FA597] bg-white/70 dark:bg-[#121D18]/70 px-2 py-0.5 rounded-full border border-[#D6DFD8] dark:border-[#273A31] shrink-0">
+                <Sparkles className="w-3 h-3 text-[#4A6958]" />
+                <span>Search Topics</span>
+              </span>
             )}
           </div>
+
+          {/* Topic Search Suggestions & Topic Explorer Dropdown */}
+          {isSearchFocused && (
+            <div
+              onMouseDown={(e) => e.preventDefault()}
+              className="absolute left-0 right-0 top-full mt-2 bg-white dark:bg-[#1B2922] rounded-3xl shadow-2xl border border-[#D6DFD8] dark:border-[#273A31] p-4 sm:p-5 z-50 animate-in fade-in slide-in-from-top-2 duration-150 max-h-[75vh] overflow-y-auto no-scrollbar"
+            >
+              {searchQuery.trim() ? (
+                <div>
+                  <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-[#D6DFD8]/60 dark:border-[#273A31]/60">
+                    <div className="flex items-center gap-1.5">
+                      <Hash className="w-3.5 h-3.5 text-[#4A6958]" />
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-[#435146] dark:text-[#8FA597]">
+                        Matching Topics
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleExecuteSearch(searchQuery)}
+                      className="text-xs font-bold text-[#4A6958] dark:text-[#8FA597] hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      <span>Search all pins for "{searchQuery}"</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  {/* Matching Topic Cards */}
+                  <div className="space-y-1.5">
+                    <button
+                      type="button"
+                      onClick={() => handleExecuteSearch(searchQuery)}
+                      className="w-full text-left px-3.5 py-2.5 rounded-2xl bg-[#E8EDE9]/60 dark:bg-[#1F3028]/60 hover:bg-[#E8EDE9] dark:hover:bg-[#1F3028] text-sm text-[#1C1C1C] dark:text-[#EDF2EE] flex items-center justify-between group cursor-pointer transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Search className="w-4 h-4 text-[#4A6958]" />
+                        <span className="font-semibold text-sm">
+                          Search topic keyword <span className="text-[#4A6958] dark:text-[#8FA597]">"{searchQuery}"</span>
+                        </span>
+                      </div>
+                      <span className="text-[11px] text-[#435146] dark:text-[#8FA597] bg-white dark:bg-[#121D18] px-2 py-0.5 rounded-full border border-[#D6DFD8] dark:border-[#273A31]">
+                        Press Enter ↵
+                      </span>
+                    </button>
+
+                    {ENCRIPT_TOPICS.filter((t) =>
+                      t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                      t.tag.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                      t.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                      t.query.toLowerCase().includes(searchQuery.toLowerCase())
+                    ).map((topic) => (
+                      <button
+                        key={topic.id}
+                        type="button"
+                        onClick={() => handleExecuteSearch(topic.query, topic.category)}
+                        className="w-full text-left px-3.5 py-2.5 rounded-2xl hover:bg-[#E8EDE9] dark:hover:bg-[#1F3028] text-sm text-[#1C1C1C] dark:text-[#EDF2EE] flex items-center justify-between group cursor-pointer transition-colors border border-transparent hover:border-[#D6DFD8] dark:hover:border-[#273A31]"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-xl">{topic.icon}</span>
+                          <div>
+                            <p className="font-bold text-xs sm:text-sm group-hover:text-[#4A6958] dark:group-hover:text-[#8FA597] transition-colors">
+                              {topic.name}
+                            </p>
+                            <span className="text-[11px] text-[#435146] dark:text-[#8FA597] font-medium">
+                              #{topic.tag} • {topic.pinCount}
+                            </span>
+                          </div>
+                        </div>
+                        <span className="text-xs text-[#4A6958] dark:text-[#8FA597] bg-[#E8EDE9] dark:bg-[#121D18] px-2.5 py-1 rounded-full font-semibold">
+                          Explore Topic
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  {/* Topic Tab Filter Selector */}
+                  <div className="flex items-center justify-between pb-3 mb-3 border-b border-[#D6DFD8]/60 dark:border-[#273A31]/60">
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setTopicTab('trending')}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                          topicTab === 'trending'
+                            ? 'bg-[#4A6958] text-white shadow-xs'
+                            : 'bg-[#E8EDE9] dark:bg-[#1F3028] text-[#435146] dark:text-[#8FA597] hover:bg-[#D6DFD8]'
+                        }`}
+                      >
+                        <Flame className="w-3.5 h-3.5" />
+                        <span>Trending Topics</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setTopicTab('all')}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                          topicTab === 'all'
+                            ? 'bg-[#4A6958] text-white shadow-xs'
+                            : 'bg-[#E8EDE9] dark:bg-[#1F3028] text-[#435146] dark:text-[#8FA597] hover:bg-[#D6DFD8]'
+                        }`}
+                      >
+                        <Hash className="w-3.5 h-3.5" />
+                        <span>All Topics</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setTopicTab('tags')}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                          topicTab === 'tags'
+                            ? 'bg-[#4A6958] text-white shadow-xs'
+                            : 'bg-[#E8EDE9] dark:bg-[#1F3028] text-[#435146] dark:text-[#8FA597] hover:bg-[#D6DFD8]'
+                        }`}
+                      >
+                        <Tag className="w-3.5 h-3.5" />
+                        <span>Topic Tags</span>
+                      </button>
+                    </div>
+
+                    <span className="hidden sm:inline text-[11px] text-[#435146] dark:text-[#8FA597]">
+                      Click topic to explore
+                    </span>
+                  </div>
+
+                  {/* Topic Grid */}
+                  {topicTab !== 'tags' ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
+                      {(topicTab === 'trending'
+                        ? ENCRIPT_TOPICS.filter((t) => t.isTrending)
+                        : ENCRIPT_TOPICS
+                      ).map((topic) => (
+                        <button
+                          key={topic.id}
+                          type="button"
+                          onClick={() => handleExecuteSearch(topic.query, topic.category)}
+                          className="w-full text-left p-3 rounded-2xl bg-[#F4F6F4] dark:bg-[#121D18]/70 hover:bg-[#E8EDE9] dark:hover:bg-[#1F3028] text-sm text-[#1C1C1C] dark:text-[#EDF2EE] flex items-center justify-between group cursor-pointer transition-all border border-transparent hover:border-[#D6DFD8] dark:hover:border-[#273A31]"
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="text-xl sm:text-2xl">{topic.icon}</span>
+                            <div>
+                              <p className="font-bold text-xs sm:text-sm group-hover:text-[#4A6958] dark:group-hover:text-[#8FA597] transition-colors leading-tight">
+                                {topic.name}
+                              </p>
+                              <span className="text-[11px] text-[#435146] dark:text-[#8FA597] font-medium">
+                                #{topic.tag} • {topic.pinCount}
+                              </span>
+                            </div>
+                          </div>
+                          <ArrowRight className="w-3.5 h-3.5 text-[#435146] dark:text-[#8FA597] opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap gap-2 mb-4 p-1">
+                      {ENCRIPT_TOPICS.map((topic) => (
+                        <button
+                          key={topic.id}
+                          type="button"
+                          onClick={() => handleExecuteSearch(topic.query, topic.category)}
+                          className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-[#E8EDE9] hover:bg-[#D6DFD8] dark:bg-[#1F3028] dark:hover:bg-[#273A31] text-xs font-bold text-[#1C1C1C] dark:text-[#EDF2EE] hover:text-[#4A6958] dark:hover:text-[#8FA597] transition-all cursor-pointer border border-[#D6DFD8] dark:border-[#273A31]"
+                        >
+                          <span>{topic.icon}</span>
+                          <span>#{topic.tag}</span>
+                          <span className="text-[10px] text-[#435146] dark:text-[#8FA597] font-normal">
+                            ({topic.pinCount})
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Quick Categories Bar */}
+                  <div className="pt-3 border-t border-[#D6DFD8]/60 dark:border-[#273A31]/60">
+                    <div className="flex items-center gap-1.5 mb-2.5">
+                      <Tag className="w-3.5 h-3.5 text-[#4A6958]" />
+                      <span className="text-xs font-bold uppercase tracking-wider text-[#435146] dark:text-[#8FA597]">
+                        Popular Categories
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {CATEGORIES.slice(1, 9).map((cat) => (
+                        <button
+                          key={cat}
+                          type="button"
+                          onClick={() => handleExecuteSearch(cat, cat)}
+                          className="px-3 py-1.5 text-xs font-semibold rounded-full bg-[#E8EDE9] hover:bg-[#D6DFD8] dark:bg-[#1F3028] dark:hover:bg-[#273A31] text-[#1C1C1C] dark:text-[#EDF2EE] transition-colors cursor-pointer"
+                        >
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Right Section: Donate, Dark Mode, Notifications, Messages, User Profile, Landing Switcher */}

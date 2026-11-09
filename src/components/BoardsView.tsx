@@ -178,10 +178,11 @@ export const BoardsView: React.FC<BoardsViewProps> = ({
               </p>
             </div>
           ) : (
-            <div className="masonry-grid">
-              {boardPins.map((pin) => (
+            <div key={`board-${selectedBoard.id}`} className="masonry-grid">
+              {boardPins.map((pin, index) => (
                 <PinCard
                   key={pin.id}
+                  index={index}
                   pin={pin}
                   boards={boards}
                   onOpenModal={onOpenModal}
@@ -304,10 +305,11 @@ export const BoardsView: React.FC<BoardsViewProps> = ({
                   </p>
                 </div>
               ) : (
-                <div className="masonry-grid">
-                  {allSavedPins.map((pin) => (
+                <div key="all-saved-pins" className="masonry-grid">
+                  {allSavedPins.map((pin, index) => (
                     <PinCard
                       key={pin.id}
+                      index={index}
                       pin={pin}
                       boards={boards}
                       onOpenModal={onOpenModal}

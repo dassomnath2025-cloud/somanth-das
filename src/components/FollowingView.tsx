@@ -126,10 +126,11 @@ export const FollowingView: React.FC<FollowingViewProps> = ({
             </p>
           </div>
         ) : (
-          <div className="masonry-grid">
-            {followingPins.map((pin) => (
+          <div key={`following-${followingPins.length}`} className="masonry-grid">
+            {followingPins.map((pin, index) => (
               <PinCard
                 key={pin.id}
+                index={index}
                 pin={pin}
                 boards={boards}
                 onOpenModal={onOpenModal}

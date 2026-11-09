@@ -610,6 +610,8 @@ export default function App() {
             setActiveTab={setActiveTab}
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
+            selectedCategory={selectedCategory}
+            setSelectedCategory={setSelectedCategory}
             isDarkMode={isDarkMode}
             setIsDarkMode={setIsDarkMode}
             onOpenCreateModal={() => setIsCreatePinModalOpen(true)}
@@ -697,10 +699,14 @@ export default function App() {
                   </div>
                 ) : (
                   /* Pinterest Masonry Grid */
-                  <div className="masonry-grid">
-                    {filteredPins.map((pin) => (
+                  <div
+                    key={`${selectedCategory}-${searchQuery}-${sortBy}`}
+                    className="masonry-grid"
+                  >
+                    {filteredPins.map((pin, index) => (
                       <PinCard
                         key={pin.id}
+                        index={index}
                         pin={pin}
                         boards={boards}
                         onOpenModal={(p) => setActivePinModal(p)}
